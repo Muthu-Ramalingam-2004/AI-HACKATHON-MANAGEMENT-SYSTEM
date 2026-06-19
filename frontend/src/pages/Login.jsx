@@ -20,7 +20,7 @@ const Login = () => {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid email or password. Please try again.');
+      setError(err.response?.data?.detail || err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }

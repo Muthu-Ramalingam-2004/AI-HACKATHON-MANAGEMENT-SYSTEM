@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Request Interceptor: Attach JWT Access Token
@@ -22,6 +23,24 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Customize generic Network Error to show actual API failure details
+    if (error.message === 'Network Error') {
+      error.message = `Network Error: Failed to connect to the backend server at ${API_URL}. Please ensure the server is running and accessible.`;
+    }
+
+    // Log the exact failing API URL and response in the browser console
+    const fullUrl = error.config 
+      ? (error.config.url.startsWith('http') 
+          ? error.config.url 
+          : `${error.config.baseURL || ''}${error.config.url}`) 
+      : 'unknown';
+    console.error(`API Failure at URL: ${fullUrl}`, {
+      method: error.config?.method,
+      status: error.response?.status,
+      response: error.response?.data,
+      message: error.message
+    });
+
     const originalRequest = error.config;
     
     // Check if error is 401 and we haven't already retried

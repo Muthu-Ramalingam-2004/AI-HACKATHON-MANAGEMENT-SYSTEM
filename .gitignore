@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+hackathon_db.db
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Node modules and build files
+node_modules/
+dist/
+frontend/dist/
+*.mjs
+
+# Logs and databases
+*.log
+backend/uvicorn.log
+db_info.txt
+test.txt
+test_out.log
+
+# Uploads
+backend/uploads/
+uploads/

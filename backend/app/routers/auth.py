@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from typing import List
 from app.core.database import get_db
 from app.core import security
 from app.crud import crud
@@ -26,10 +27,15 @@ def login(
     db: Session = Depends(get_db)
 ):
     user = crud.get_user_by_email(db, email=form_data.username)
-    if not user or not security.verify_password(form_data.password, user.password):
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password"
+            detail="User not found"
+        )
+    if not security.verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect password"
         )
     
     access_token = security.create_access_token(subject=user.id)
@@ -82,3 +88,16 @@ def update_user_me(
     db: Session = Depends(get_db)
 ):
     return crud.update_user_profile(db, user_id=current_user.id, updates=user_in)
+
+@router.get("/users", response_model=List[schemas.UserResponse])
+def get_all_users(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have enough permissions to access this resource"
+        )
+    return db.query(models.User).all()
+

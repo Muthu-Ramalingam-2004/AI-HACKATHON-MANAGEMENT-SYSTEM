@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -36,7 +37,9 @@ function App() {
           <Route path="/dashboard/admin/*" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <Layout>
-                <SuperAdminDashboard />
+                <ErrorBoundary>
+                  <SuperAdminDashboard />
+                </ErrorBoundary>
               </Layout>
             </ProtectedRoute>
           } />
@@ -44,7 +47,9 @@ function App() {
           <Route path="/dashboard/college/*" element={
             <ProtectedRoute allowedRoles={['admin', 'college']}>
               <Layout>
-                <CollegeDashboard />
+                <ErrorBoundary>
+                  <CollegeDashboard />
+                </ErrorBoundary>
               </Layout>
             </ProtectedRoute>
           } />
@@ -52,7 +57,9 @@ function App() {
           <Route path="/dashboard/judge/*" element={
             <ProtectedRoute allowedRoles={['admin', 'judge']}>
               <Layout>
-                <JudgeDashboard />
+                <ErrorBoundary>
+                  <JudgeDashboard />
+                </ErrorBoundary>
               </Layout>
             </ProtectedRoute>
           } />
@@ -60,7 +67,9 @@ function App() {
           <Route path="/dashboard/participant/*" element={
             <ProtectedRoute allowedRoles={['participant']}>
               <Layout>
-                <ParticipantDashboard />
+                <ErrorBoundary>
+                  <ParticipantDashboard />
+                </ErrorBoundary>
               </Layout>
             </ProtectedRoute>
           } />
@@ -68,7 +77,9 @@ function App() {
           <Route path="/leaderboard" element={
             <ProtectedRoute>
               <Layout>
-                <Leaderboard />
+                <ErrorBoundary>
+                  <Leaderboard />
+                </ErrorBoundary>
               </Layout>
             </ProtectedRoute>
           } />

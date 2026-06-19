@@ -158,6 +158,7 @@ class CertificateResponse(CertificateBase):
     user_id: int
     generated_at: datetime
     user: UserResponse
+    hackathon_title: Optional[str] = None
 
     class Config:
         from_attributes = True

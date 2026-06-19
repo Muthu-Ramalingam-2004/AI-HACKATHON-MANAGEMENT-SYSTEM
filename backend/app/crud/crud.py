@@ -9,7 +9,9 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+    if not email:
+        return None
+    return db.query(models.User).filter(func.lower(models.User.email) == email.strip().lower()).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_pwd = get_password_hash(user.password)
@@ -70,10 +72,20 @@ def update_hackathon(db: Session, hackathon_id: int, hackathon: schemas.Hackatho
     db_hackathon = get_hackathon_by_id(db, hackathon_id)
     if not db_hackathon:
         return None
+    
+    status_updated_to_completed = False
+    if hackathon.status == "completed" and db_hackathon.status != "completed":
+        status_updated_to_completed = True
+
     for field, value in hackathon.model_dump(exclude_unset=True).items():
         setattr(db_hackathon, field, value)
     db.commit()
     db.refresh(db_hackathon)
+
+    if status_updated_to_completed:
+        for team in db_hackathon.teams:
+            auto_generate_team_certificates(db, team.id)
+
     return db_hackathon
 
 def delete_hackathon(db: Session, hackathon_id: int):
@@ -100,6 +112,8 @@ def create_team(db: Session, team: schemas.TeamCreate, leader_id: int):
     db.add(db_member)
     db.commit()
     
+    # Refresh to load relationships
+    db.refresh(db_team)
     return db_team
 
 def get_team_by_id(db: Session, team_id: int):
@@ -117,12 +131,45 @@ def add_team_member(db: Session, team_id: int, user_id: int):
     db.add(db_member)
     db.commit()
     db.refresh(db_member)
+    
+    # If the team has already submitted their project, auto-generate a certificate for the new member
+    submission = db.query(models.Submission).filter(models.Submission.team_id == team_id).first()
+    if submission:
+        auto_generate_team_certificates(db, team_id)
+        
     return db_member
 
 def get_user_teams(db: Session, user_id: int):
-    return db.query(models.Team).join(models.TeamMember).filter(models.TeamMember.user_id == user_id).all()
+    return db.query(models.Team).join(
+        models.TeamMember, models.Team.id == models.TeamMember.team_id
+    ).filter(
+        models.TeamMember.user_id == user_id
+    ).all()
 
 # Submission Operations
+def auto_generate_team_certificates(db: Session, team_id: int):
+    try:
+        team = db.query(models.Team).filter(models.Team.id == team_id).first()
+        if team:
+            import uuid
+            for member in team.members:
+                prefix = f"CERT-{team.hackathon_id}-{member.user_id}-"
+                existing_cert = db.query(models.Certificate).filter(
+                    models.Certificate.user_id == member.user_id,
+                    models.Certificate.certificate_number.like(f"{prefix}%")
+                ).first()
+                if not existing_cert:
+                    unique_num = f"CERT-{team.hackathon_id}-{member.user_id}-{uuid.uuid4().hex[:8].upper()}"
+                    db_cert = models.Certificate(
+                        user_id=member.user_id,
+                        certificate_type="participation",
+                        certificate_number=unique_num
+                    )
+                    db.add(db_cert)
+            db.commit()
+    except Exception as e:
+        print(f"Error auto-generating certificates: {e}")
+
 def create_submission(db: Session, submission: schemas.SubmissionCreate, ppt_file_path: str = None):
     # Check if team already has a submission
     db_sub = db.query(models.Submission).filter(models.Submission.team_id == submission.team_id).first()
@@ -134,6 +181,7 @@ def create_submission(db: Session, submission: schemas.SubmissionCreate, ppt_fil
             db_sub.ppt_file = ppt_file_path
         db.commit()
         db.refresh(db_sub)
+        auto_generate_team_certificates(db, submission.team_id)
         return db_sub
     
     db_sub = models.Submission(
@@ -146,6 +194,7 @@ def create_submission(db: Session, submission: schemas.SubmissionCreate, ppt_fil
     db.add(db_sub)
     db.commit()
     db.refresh(db_sub)
+    auto_generate_team_certificates(db, submission.team_id)
     return db_sub
 
 def get_submission_by_team(db: Session, team_id: int):
@@ -174,6 +223,12 @@ def create_evaluation(db: Session, eval_data: schemas.EvaluationCreate, judge_id
         existing.comments = eval_data.comments
         db.commit()
         db.refresh(existing)
+        
+        # Trigger certificate auto-generation on project completion/evaluation
+        submission = db.query(models.Submission).filter(models.Submission.id == eval_data.submission_id).first()
+        if submission:
+            auto_generate_team_certificates(db, submission.team_id)
+            
         return existing
         
     db_eval = models.Evaluation(
@@ -188,6 +243,12 @@ def create_evaluation(db: Session, eval_data: schemas.EvaluationCreate, judge_id
     db.add(db_eval)
     db.commit()
     db.refresh(db_eval)
+    
+    # Trigger certificate auto-generation on project completion/evaluation
+    submission = db.query(models.Submission).filter(models.Submission.id == eval_data.submission_id).first()
+    if submission:
+        auto_generate_team_certificates(db, submission.team_id)
+        
     return db_eval
 
 def get_evaluations_for_submission(db: Session, submission_id: int):

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api, { API_URL } from '../utils/api';
 import { 
   Code, 
   Users, 
@@ -18,9 +19,32 @@ import {
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   
   // Tab states
   const [activeTab, setActiveTab] = useState('hackathons'); // hackathons, teams, certificates, profile
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.endsWith('/hackathons')) {
+      setActiveTab('hackathons');
+    } else if (path.endsWith('/teams')) {
+      setActiveTab('teams');
+    } else if (path.endsWith('/certificates')) {
+      setActiveTab('certificates');
+    } else if (path.endsWith('/profile') || path === '/dashboard/participant' || path === '/dashboard/participant/') {
+      setActiveTab('profile');
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.name || '');
+      setProfileEmail(user.email || '');
+      setProfileCollege(user.college_id || '');
+    }
+  }, [user]);
 
   // Common data
   const [hackathons, setHackathons] = useState([]);
@@ -52,6 +76,8 @@ const ParticipantDashboard = () => {
   // Status/Messages
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   // Submission Statuses per team
   const [teamSubmissions, setTeamSubmissions] = useState({});
@@ -62,7 +88,8 @@ const ParticipantDashboard = () => {
   };
 
   const loadData = async () => {
-    setIsLoading(true);
+    setIsInitialLoading(true);
+    setFetchError(null);
     try {
       const hackRes = await api.get('/hackathons?status=active');
       setHackathons(hackRes.data);
@@ -90,8 +117,9 @@ const ParticipantDashboard = () => {
 
     } catch (err) {
       console.error("Error loading dashboard data", err);
+      setFetchError(err.response?.data?.detail || 'Failed to load dashboard data. Please check your connection or try again.');
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   };
 
@@ -116,17 +144,28 @@ const ParticipantDashboard = () => {
   const handleCreateTeam = async (e) => {
     e.preventDefault();
     if (!selectedHackathonId || !teamName) return;
+    setIsLoading(true);
     try {
-      await api.post('/teams', {
+      const response = await api.post('/teams/', {
         team_name: teamName,
         hackathon_id: parseInt(selectedHackathonId)
       });
       setShowCreateTeamModal(false);
       setTeamName('');
       showMessage('success', 'Team registered successfully! You are the leader.');
-      loadData();
+      
+      // Auto-select the newly registered team immediately
+      if (response.data && response.data.id) {
+        setSelectedSubmissionTeamId(response.data.id.toString());
+      }
+      // Navigate to the teams tab immediately
+      navigate('/dashboard/participant/teams');
+      
+      await loadData();
     } catch (err) {
       showMessage('error', err.response?.data?.detail || 'Failed to register team');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -177,8 +216,33 @@ const ParticipantDashboard = () => {
     }
   };
 
+  if (isInitialLoading && !fetchError) {
+    return (
+      <div class="py-12 flex flex-col items-center justify-center">
+        <div class="h-8 w-8 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+        <p class="text-xs text-slate-500 mt-2 font-medium">Loading dashboard data...</p>
+      </div>
+    );
+  }
+
   return (
     <div class="space-y-6">
+      {/* Fetch Error Notification */}
+      {fetchError && (
+        <div class="p-4 rounded-xl border flex items-center justify-between text-sm bg-rose-500/10 border-rose-500/20 text-rose-400 animate-pulse">
+          <div class="flex items-center space-x-2.5">
+            <AlertCircle class="h-5 w-5 shrink-0" />
+            <span>{fetchError}</span>
+          </div>
+          <button 
+            onClick={loadData}
+            class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-semibold rounded-lg text-xs cursor-pointer transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Alert Notification */}
       {msg.text && (
         <div class={`p-4 rounded-xl border flex items-center space-x-2.5 text-sm ${
@@ -196,7 +260,13 @@ const ParticipantDashboard = () => {
         {['hackathons', 'teams', 'certificates', 'profile'].map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              if (tab === 'profile') {
+                navigate('/dashboard/participant');
+              } else {
+                navigate(`/dashboard/participant/${tab}`);
+              }
+            }}
             class={`pb-3 font-semibold transition-all capitalize border-b-2 cursor-pointer ${
               activeTab === tab 
                 ? 'border-indigo-500 text-indigo-400' 
@@ -228,27 +298,27 @@ const ParticipantDashboard = () => {
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {hackathons.map((hack) => (
-              <div key={hack.id} class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col justify-between interactive-hover">
+            {hackathons?.map((hack) => (
+              <div key={hack?.id} class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col justify-between interactive-hover">
                 <div>
                   <div class="h-1.5 w-12 bg-indigo-500 rounded-full mb-4"></div>
-                  <h3 class="font-bold text-white text-base leading-tight">{hack.title}</h3>
-                  <p class="text-xs text-slate-400 mt-2 line-clamp-3">{hack.description}</p>
+                  <h3 class="font-bold text-white text-base leading-tight">{hack?.title || 'Untitled Hackathon'}</h3>
+                  <p class="text-xs text-slate-400 mt-2 line-clamp-3">{hack?.description || ''}</p>
                 </div>
                 <div class="mt-6 border-t border-slate-800/80 pt-4 flex justify-between items-center">
                   <div>
                     <span class="text-[10px] text-slate-500 block">Duration</span>
                     <span class="text-xs font-medium text-slate-300">
-                      {new Date(hack.start_date).toLocaleDateString()} - {new Date(hack.end_date).toLocaleDateString()}
+                      {hack?.start_date ? new Date(hack.start_date).toLocaleDateString() : ''} - {hack?.end_date ? new Date(hack.end_date).toLocaleDateString() : ''}
                     </span>
                   </div>
                   <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 uppercase">
-                    {hack.status}
+                    {hack?.status || ''}
                   </span>
                 </div>
               </div>
             ))}
-            {hackathons.length === 0 && (
+            {(!hackathons || hackathons.length === 0) && (
               <p class="text-slate-500 text-xs py-4 col-span-3 text-center">No active hackathons at the moment.</p>
             )}
           </div>
@@ -270,7 +340,7 @@ const ParticipantDashboard = () => {
                     <div class="flex justify-between items-start">
                       <div>
                         <h3 class="font-bold text-white text-base">{team.team_name}</h3>
-                        <p class="text-xs text-indigo-400 font-medium mt-0.5">{team.hackathon.title}</p>
+                        <p class="text-xs text-indigo-400 font-medium mt-0.5">{team.hackathon?.title || 'Unknown Hackathon'}</p>
                       </div>
                       <span class={`px-2.5 py-0.5 text-[10px] font-bold rounded-full border uppercase ${
                         isLeader 
@@ -285,12 +355,12 @@ const ParticipantDashboard = () => {
                     <div>
                       <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Members</h4>
                       <div class="flex flex-wrap gap-2">
-                        {team.members.map((m) => (
+                        {team.members?.map((m) => (
                           <div key={m.id} class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800/80 text-xs">
                             <div class="h-4.5 w-4.5 rounded-full bg-slate-800 flex items-center justify-center font-bold text-[9px] text-indigo-400">
-                              {m.user.name.charAt(0).toUpperCase()}
+                              {m.user?.name ? m.user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
-                            <span class="text-slate-300 font-medium">{m.user.name}</span>
+                            <span class="text-slate-300 font-medium">{m.user?.name || 'Unknown Member'}</span>
                           </div>
                         ))}
                       </div>
@@ -358,10 +428,15 @@ const ParticipantDashboard = () => {
                   >
                     <option value="">Choose a team...</option>
                     {myTeams.filter(t => t.leader_id === user?.id).map((t) => (
-                      <option key={t.id} value={t.id}>{t.team_name} ({t.hackathon.title})</option>
+                      <option key={t.id} value={t.id}>{t.team_name} ({t.hackathon?.title || 'Unknown Hackathon'})</option>
                     ))}
                   </select>
                   <span class="text-[10px] text-slate-500 mt-1 block">Only team leaders can submit projects.</span>
+                  {myTeams.filter(t => t.leader_id === user?.id).length === 0 && (
+                    <span class="text-[10px] text-rose-400 mt-1.5 block">
+                      You must be the leader of a team in an active hackathon to submit projects.
+                    </span>
+                  )}
                 </div>
 
                 <div>
@@ -460,34 +535,92 @@ const ParticipantDashboard = () => {
       {activeTab === 'certificates' && (
         <div class="space-y-6">
           <div>
-            <h2 class="text-xl font-bold text-white">My Certificates</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Download your winner and participation credentials.</p>
+            <h2 class="text-xl font-bold text-white font-sans">My Certificates</h2>
+            <p class="text-xs text-slate-500 mt-0.5">View and download your official winner and participation credentials.</p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {certificates.map((cert) => (
-              <div key={cert.id} class="glass-card p-6 rounded-2xl border border-slate-800 flex items-center justify-between relative overflow-hidden">
-                <div class="flex items-center space-x-4">
-                  <div class="h-12 w-12 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center text-indigo-400">
-                    <Award class="h-6.5 w-6.5" />
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {certificates?.map((cert) => {
+              const isWinner = cert?.certificate_type?.toLowerCase() === 'winner';
+              const certTitle = isWinner ? 'Certificate of Excellence' : 'Certificate of Participation';
+              const formattedDate = cert?.generated_at 
+                ? new Date(cert.generated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+                : new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+              return (
+                <div key={cert?.id} class="glass-card p-6 rounded-3xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden hover:border-indigo-500/30 transition-all group duration-300">
+                  {/* Decorative glow */}
+                  <div class={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-all duration-500 ${
+                    isWinner ? 'bg-amber-500/10' : 'bg-indigo-500/10'
+                  }`}></div>
+                  
+                  <div class="space-y-4">
+                    <div class="flex items-start justify-between">
+                      <div class="flex items-center space-x-3.5">
+                        <div class={`h-12 w-12 rounded-xl border flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
+                          isWinner 
+                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' 
+                            : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+                        }`}>
+                          <Award class="h-6.5 w-6.5" />
+                        </div>
+                        <div>
+                          <h3 class="font-bold text-white text-base tracking-tight">{certTitle}</h3>
+                          <p class="text-[10px] font-mono text-slate-500 uppercase tracking-wider mt-0.5">{cert?.certificate_number}</p>
+                        </div>
+                      </div>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 space-x-1">
+                        <CheckCircle class="h-3 w-3 shrink-0" />
+                        <span>Verified</span>
+                      </span>
+                    </div>
+
+                    <div class="border-t border-slate-800/60 pt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-slate-400">
+                      <div>
+                        <span class="block text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Event / Challenge</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{cert?.hackathon_title || 'AI Hackathon'}</span>
+                      </div>
+                      <div>
+                        <span class="block text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Recipient</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{cert?.user?.name || user?.name}</span>
+                      </div>
+                      <div>
+                        <span class="block text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Date Issued</span>
+                        <span class="font-medium text-slate-400 block mt-0.5">{formattedDate}</span>
+                      </div>
+                      <div>
+                        <span class="block text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Issuer</span>
+                        <span class="font-medium text-slate-400 block mt-0.5">HackAI Global</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 class="font-bold text-white capitalize">{cert.certificate_type} Certificate</h3>
-                    <p class="text-[10px] font-mono text-slate-500 mt-1">{cert.certificate_number}</p>
+
+                  <div class="mt-5 pt-3.5 border-t border-slate-800/55 flex justify-end">
+                    <a
+                      href={`${API_URL}/certificates/${cert?.id}/download?token=${localStorage.getItem('accessToken')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center px-4 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-indigo-400 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-black/15 group/btn"
+                    >
+                      <Download class="h-4 w-4 mr-1.5 transition-transform group-hover/btn:-translate-y-0.5" />
+                      Download PDF
+                    </a>
                   </div>
                 </div>
-                <a
-                  href={`http://localhost:8000/api/v1/certificates/${cert.id}/download?token=${localStorage.getItem('accessToken')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="p-2.5 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-400 hover:text-white border border-indigo-500/20 hover:border-transparent rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/5"
-                >
-                  <Download class="h-4.5 w-4.5" />
-                </a>
+              );
+            })}
+
+            {(!certificates || certificates.length === 0) && (
+              <div class="col-span-1 lg:col-span-2 flex flex-col items-center justify-center p-12 text-center glass-card border border-slate-800/80 rounded-3xl mt-4 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/0 to-transparent pointer-events-none"></div>
+                <div class="h-16 w-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 shadow-xl shadow-indigo-500/5 animate-pulse">
+                  <Award class="h-8 w-8" />
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2 font-sans">No Certificates Available Yet</h3>
+                <p class="text-xs text-slate-400 max-w-sm">
+                  Certificates are automatically generated when you submit a project for an active hackathon, or when your project is completed.
+                </p>
               </div>
-            ))}
-            {certificates.length === 0 && (
-              <p class="text-slate-500 text-xs py-4 col-span-2 text-center">No certificates generated yet. Stand by until hackathons end.</p>
             )}
           </div>
         </div>
@@ -609,9 +742,14 @@ const ParticipantDashboard = () => {
 
               <button
                 type="submit"
-                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg cursor-pointer"
+                disabled={isLoading}
+                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white rounded-xl text-xs font-semibold shadow-lg cursor-pointer flex items-center justify-center"
               >
-                Create and Register Team
+                {isLoading ? (
+                  <div class="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  'Create and Register Team'
+                )}
               </button>
             </form>
           </div>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import api, { API_URL } from '../utils/api';
 import { 
   Users, 
   School, 
@@ -17,6 +16,8 @@ import {
 } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview'); // overview, hackathons, colleges, users, certificates
   
   // Dashboard stats
@@ -65,23 +66,22 @@ const SuperAdminDashboard = () => {
       const colRes = await api.get('/colleges');
       setColleges(colRes.data);
 
-      // 4. Fetch Users (We can list them from backend or custom query. In this MVP, we fetch from local list)
-      const usersRes = await api.get('/dashboard/college?college_id=1'); // fallback endpoint to get participants
-      // To get all users for admin, let's create a small endpoint or query in backend, or query stats.
-      // We will fetch users from auth endpoint if we want, or mock list in frontend. Since we seeded Jane Doe,
-      // college Coordinator etc., let's read the seeded users list dynamically. We'll implement a query to get users.
-      // Wait, we didn't define a general `/users` endpoint, let's query the database using dashboard details
-      // or implement user lists directly.
-      const usersListRes = await api.get('/dashboard/admin'); 
-      // We will mock/calculate a simple list or query backend. Let's list a few static seeds or query `/colleges/1/students`
-      // for demo purposes, or fallback. Let's make an API call to get all users.
-      // We can fetch from backend `/dashboard/college` or fetch students. Let's make a mock users list for admin dashboard
-      // if an endpoint doesn't exist, but wait! We can just fetch colleges and students.
-      setUsersList([
-        { id: 4, name: 'Jane Doe', email: 'student@hackathon.com', role: 'participant', college_name: 'Global Institute of Technology' },
-        { id: 2, name: 'Expert Judge', email: 'judge@hackathon.com', role: 'judge', college_name: 'External Evaluator' },
-        { id: 3, name: 'College Coordinator', email: 'college@hackathon.com', role: 'college', college_name: 'Global Institute of Technology' }
-      ]);
+      // 4. Fetch Users dynamically from auth/users
+      try {
+        const usersRes = await api.get('/auth/users');
+        const formattedUsers = usersRes.data.map(u => ({
+          ...u,
+          college_name: u.college ? u.college.college_name : 'System Organizer'
+        }));
+        setUsersList(formattedUsers);
+      } catch (userErr) {
+        console.error('Failed to fetch users, falling back to mock', userErr);
+        setUsersList([
+          { id: 4, name: 'Jane Doe', email: 'student@hackathon.com', role: 'participant', college_name: 'Global Institute of Technology' },
+          { id: 2, name: 'Expert Judge', email: 'judge@hackathon.com', role: 'judge', college_name: 'External Evaluator' },
+          { id: 3, name: 'College Coordinator', email: 'college@hackathon.com', role: 'college', college_name: 'Global Institute of Technology' }
+        ]);
+      }
 
       // 5. Fetch certificates
       const certRes = await api.get('/certificates/all');
@@ -93,6 +93,21 @@ const SuperAdminDashboard = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.endsWith('/hackathons')) {
+      setActiveTab('hackathons');
+    } else if (path.endsWith('/colleges')) {
+      setActiveTab('colleges');
+    } else if (path.endsWith('/users')) {
+      setActiveTab('users');
+    } else if (path.endsWith('/certificates')) {
+      setActiveTab('certificates');
+    } else {
+      setActiveTab('overview');
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     loadData();
@@ -184,7 +199,13 @@ const SuperAdminDashboard = () => {
         {['overview', 'hackathons', 'colleges', 'users', 'certificates'].map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              if (tab === 'overview') {
+                navigate('/dashboard/admin');
+              } else {
+                navigate(`/dashboard/admin/${tab}`);
+              }
+            }}
             class={`pb-3 font-semibold transition-all capitalize border-b-2 cursor-pointer ${
               activeTab === tab 
                 ? 'border-indigo-500 text-indigo-400' 
@@ -503,7 +524,7 @@ const SuperAdminDashboard = () => {
                         <td class="px-6 py-4 text-xs font-mono text-slate-400">{cert.certificate_number}</td>
                         <td class="px-6 py-4 text-right">
                           <a
-                            href={`http://localhost:8000/api/v1/certificates/${cert.id}/download?token=${localStorage.getItem('accessToken')}`}
+                            href={`${API_URL}/certificates/${cert.id}/download?token=${localStorage.getItem('accessToken')}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex items-center text-indigo-400 hover:text-indigo-300 text-xs font-semibold"
@@ -540,8 +561,9 @@ const SuperAdminDashboard = () => {
                   class="mt-1.5 block w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 appearance-none"
                 >
                   <option value="">Select student...</option>
-                  {/* Participant seeds or queried students */}
-                  <option value="4">Jane Doe (student@hackathon.com)</option>
+                  {usersList.filter(u => u.role === 'participant').map(usr => (
+                    <option key={usr.id} value={usr.id}>{usr.name} ({usr.email})</option>
+                  ))}
                 </select>
               </div>
 

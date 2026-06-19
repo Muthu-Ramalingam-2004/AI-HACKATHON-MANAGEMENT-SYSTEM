@@ -128,6 +128,29 @@ def seed_data():
             db.commit()
             print("Default Participant User Seeded (student@hackathon.com / student123).")
             
+        # Seed Hackathons if none exist
+        if db.query(models.Hackathon).count() == 0:
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            hack1 = models.Hackathon(
+                title="Generative AI Hackathon 2026",
+                description="Build innovative generative AI applications using state-of-the-art LLMs.",
+                start_date=now - timedelta(days=2),
+                end_date=now + timedelta(days=5),
+                status="active"
+            )
+            hack2 = models.Hackathon(
+                title="Green Tech AI Challenge",
+                description="Apply AI models to solve sustainability, renewable energy, and climate issues.",
+                start_date=now + timedelta(days=10),
+                end_date=now + timedelta(days=15),
+                status="draft"
+            )
+            db.add(hack1)
+            db.add(hack2)
+            db.commit()
+            print("Default Hackathons Seeded (Generative AI Hackathon 2026 - active, Green Tech AI Challenge - draft).")
+            
     except Exception as e:
         print(f"Error during seeding: {e}")
     finally:
