@@ -7,6 +7,8 @@ from app.core.database import engine, Base, SessionLocal
 from app.routers import auth, colleges, hackathons, teams, submissions, evaluations, certificates, dashboard
 from app.models import models
 from app.core.security import get_password_hash
+from sqlalchemy import text
+
 
 # Create Database tables on startup if they don't exist
 Base.metadata.create_all(bind=engine)
@@ -21,7 +23,14 @@ app = FastAPI(
 # CORS configuration to allow connections from React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development; refine for production
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -163,3 +172,21 @@ def read_root():
         "docs_url": "/docs",
         "version": "1.0.0"
     }
+
+@app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
+def health_check():
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    finally:
+        db.close()
+    
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "api_version": "1.0.0"
+    }
+

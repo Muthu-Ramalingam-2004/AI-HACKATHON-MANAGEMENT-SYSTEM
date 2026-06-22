@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
+import BackendHealthGate from './components/BackendHealthGate';
+
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Leaderboard from './pages/Leaderboard';
@@ -27,8 +29,9 @@ const RootRedirect = () => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
+      <BackendHealthGate>
+        <AuthProvider>
+          <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -88,6 +91,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
+      </BackendHealthGate>
     </Router>
   );
 }
