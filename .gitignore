@@ -28,3 +28,6 @@ test_out.log
 # Uploads
 backend/uploads/
 uploads/
+
+# Runtime Logs and Daemon States
+logs/

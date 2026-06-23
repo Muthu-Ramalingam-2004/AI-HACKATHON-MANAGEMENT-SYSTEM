@@ -14,7 +14,7 @@ call :log "==================================================="
 set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 set "STARTUP_LNK=%STARTUP_DIR%\AI_Hackathon_Startup.lnk"
 call :log "[INFO] Configuring automatic startup shortcut..."
-powershell -ExecutionPolicy Bypass -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%STARTUP_LNK%'); $Shortcut.TargetPath = '%~dp0start.bat'; $Shortcut.WorkingDirectory = '%~dp0'; $Shortcut.Save()" >nul 2>&1
+powershell -ExecutionPolicy Bypass -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%STARTUP_LNK%'); $Shortcut.TargetPath = '%~dp0venv\Scripts\pythonw.exe'; $Shortcut.Arguments = 'manage.py daemon'; $Shortcut.WorkingDirectory = '%~dp0'; $Shortcut.Save()" >nul 2>&1
 if exist "%STARTUP_LNK%" (
     call :log "[SUCCESS] Startup shortcut registered successfully: %STARTUP_LNK%"
 ) else (
@@ -73,24 +73,16 @@ if not exist "frontend\node_modules\" (
     call :log "[SUCCESS] Frontend dependencies installed."
 )
 
-:: 5. Port check and clean up (kills old instances to prevent conflicts/zombies)
-call :log "[INFO] Checking port availability and cleaning up old instances..."
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr /r /c:":8000 *LISTENING"') do (
-    call :log "[CLEANUP] Stopping backend process PID %%a on port 8000..."
-    taskkill /f /pid %%a >> "%~dp0logs\startup.log" 2>&1
+:: 5. Start the background services daemon
+call :log "[INFO] Starting background services daemon..."
+venv\Scripts\python.exe manage.py start
+if %errorlevel% neq 0 (
+    call :log "[ERROR] Failed to start services daemon."
+    pause
+    exit /b 1
 )
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr /r /c:":5173 *LISTENING"') do (
-    call :log "[CLEANUP] Stopping frontend process PID %%a on port 5173..."
-    taskkill /f /pid %%a >> "%~dp0logs\startup.log" 2>&1
-)
-call :log "[SUCCESS] Port checks completed. Ports 8000 and 5173 are free."
 
-:: 6. Start FastAPI Backend in a new window
-call :log "[INFO] Starting FastAPI Backend on port 8000..."
-set "USE_SQLITE=true"
-start "FastAPI Backend Server (Port 8000)" cmd /k "cd backend && ..\venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
-
-:: 7. Wait for backend health check
+:: 6. Wait for backend health check
 call :log "[INFO] Waiting for backend server to become ready on http://127.0.0.1:8000..."
 set /a count=0
 :check_loop
@@ -101,7 +93,7 @@ if %errorlevel% equ 0 (
 set /a count+=1
 if %count% geq 30 (
     call :log "[ERROR] Backend failed to start or respond to health checks with HTTP 200 within 30 seconds."
-    call :log "[ERROR] Please check the 'FastAPI Backend Server' command window."
+    call :log "[ERROR] Please check logs\daemon.log and logs\backend.log for errors."
     pause
     exit /b 1
 )
@@ -111,11 +103,7 @@ goto check_loop
 :backend_ready
 call :log "[SUCCESS] Backend is healthy and ready (HTTP 200 verified)!"
 
-:: 8. Start React Frontend (Vite) in a new window
-call :log "[INFO] Starting React Frontend (Vite)..."
-start "React Frontend (Vite) (Port 5173)" cmd /k "cd frontend && npm run dev"
-
-:: 9. Wait for frontend port to be ready
+:: 7. Wait for frontend port to be ready
 call :log "[INFO] Waiting for frontend server to start on http://localhost:5173..."
 set /a count=0
 :frontend_check_loop
@@ -124,8 +112,9 @@ if %errorlevel% equ 0 (
     goto frontend_ready
 )
 set /a count+=1
-if %count% geq 15 (
-    call :log "[ERROR] Frontend failed to start or bind to port 5173 within 15 seconds."
+if %count% geq 30 (
+    call :log "[ERROR] Frontend failed to start or bind to port 5173 within 30 seconds."
+    call :log "[ERROR] Please check logs\daemon.log and logs\frontend.log for errors."
     pause
     exit /b 1
 )
@@ -135,30 +124,25 @@ goto frontend_check_loop
 :frontend_ready
 call :log "[SUCCESS] Frontend is ready on port 5173!"
 
-:: 10. Open the browser only after services are ready
+:: 8. Open the browser only after services are ready
 call :log "[INFO] Opening default browser to http://localhost:5173 ..."
 start "" "http://localhost:5173"
 
-:: 11. Run dashboard controls in the main window
+:: 9. Run dashboard controls in the main window
 call :log "====================================================="
 call :log "   AI Hackathon Management System is running!"
 call :log "====================================================="
 call :log "   - Backend API: http://127.0.0.1:8000/docs"
 call :log "   - Frontend UI: http://localhost:5173"
 call :log ""
-call :log "   Press [ENTER] in this window to stop both servers..."
+call :log "   The application is running in the background."
+call :log "   You can safely close this window at any time."
+call :log "   Or, press [ENTER] in this window to stop all services..."
 call :log "====================================================="
 pause >nul
 
 call :log "[INFO] Stopping services..."
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr /r /c:":8000 *LISTENING"') do (
-    call :log "[CLEANUP] Stopping backend process PID %%a..."
-    taskkill /f /pid %%a >> "%~dp0logs\startup.log" 2>&1
-)
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr /r /c:":5173 *LISTENING"') do (
-    call :log "[CLEANUP] Stopping frontend process PID %%a..."
-    taskkill /f /pid %%a >> "%~dp0logs\startup.log" 2>&1
-)
+venv\Scripts\python.exe manage.py stop
 call :log "[SUCCESS] All services stopped successfully."
 ping 127.0.0.1 -n 3 >nul
 exit /b 0
