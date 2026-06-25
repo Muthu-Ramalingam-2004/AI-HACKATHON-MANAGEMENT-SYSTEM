@@ -4,7 +4,7 @@ export const API_URL = import.meta.env.VITE_API_URL || 'https://ai-hackathon-man
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 60000, // 60 seconds timeout
 });
 
 // Request Interceptor: Attach JWT Access Token

@@ -19,7 +19,7 @@ const BackendHealthGate = ({ children }) => {
     setIsChecking(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout (allows Render server to wake up)
 
     try {
       const url = getHealthCheckUrl();
@@ -30,8 +30,8 @@ const BackendHealthGate = ({ children }) => {
       
       clearTimeout(timeoutId);
       
-      // If we got any response (even error status codes), the server is reachable and active
-      if (response) {
+      // If the health endpoint returns 200 OK, the server is healthy
+      if (response && response.status === 200) {
         setIsHealthy(true);
       } else {
         setIsHealthy(false);
@@ -106,27 +106,51 @@ const BackendHealthGate = ({ children }) => {
 
           {/* Setup / Instructions */}
           <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-5 text-left space-y-3.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-              <Terminal className="w-3.5 h-3.5" /> Quick Resolution Steps
-            </h2>
-            <ul className="text-xs text-slate-300 space-y-2.5">
-              <li className="flex items-start gap-2">
-                <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">1</span>
-                <span>Open the project folder on your machine.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">2</span>
-                <span>
-                  Double-click <code className="text-indigo-300 bg-indigo-950/40 px-1 py-0.5 rounded border border-indigo-900/40 font-mono font-bold text-[10px]">start.bat</code> to launch both the backend and frontend automatically.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">3</span>
-                <span>
-                  The app will automatically reconnect as soon as the backend is healthy.
-                </span>
-              </li>
-            </ul>
+            {(() => {
+              const isLocalApi = API_URL.includes('localhost') || API_URL.includes('127.0.0.1');
+              return (
+                <>
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                    <Terminal className="w-3.5 h-3.5" /> {isLocalApi ? 'Quick Resolution Steps' : 'Connection Details'}
+                  </h2>
+                  {isLocalApi ? (
+                    <ul className="text-xs text-slate-300 space-y-2.5">
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">1</span>
+                        <span>Open the project folder on your machine.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">2</span>
+                        <span>
+                          Double-click <code className="text-indigo-300 bg-indigo-950/40 px-1 py-0.5 rounded border border-indigo-900/40 font-mono font-bold text-[10px]">start.bat</code> to launch both the backend and frontend automatically.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">3</span>
+                        <span>
+                          The app will automatically reconnect as soon as the backend is healthy.
+                        </span>
+                      </li>
+                    </ul>
+                  ) : (
+                    <ul className="text-xs text-slate-300 space-y-2.5">
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">1</span>
+                        <span>The backend on Render might be asleep. It can take up to 60 seconds to spin up from a cold start.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">2</span>
+                        <span>We are automatically retrying the connection. You can also click the manual retry button below.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px] mt-0.5">3</span>
+                        <span>If this message persists, the Render backend might still be initializing or undergoing maintenance.</span>
+                      </li>
+                    </ul>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* Action button & countdown status */}
