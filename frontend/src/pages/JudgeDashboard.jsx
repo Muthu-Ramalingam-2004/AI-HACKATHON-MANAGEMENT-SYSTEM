@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
+import api, { API_URL } from '../utils/api';
 import { 
   ClipboardCheck, 
   FileText, 
@@ -10,6 +10,8 @@ import {
   HelpCircle,
   Award
 } from 'lucide-react';
+
+const BASE_URL = API_URL.replace('/api/v1', '');
 
 const JudgeDashboard = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -200,7 +202,7 @@ const JudgeDashboard = () => {
                     )}
                     {sub.ppt_file && (
                       <a 
-                        href={`http://localhost:8000/${sub.ppt_file.replace('\\', '/')}`} 
+                        href={`${BASE_URL}/${sub.ppt_file.replace('\\', '/')}`} 
                         target="_blank" 
                         rel="noreferrer" 
                         class="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors"

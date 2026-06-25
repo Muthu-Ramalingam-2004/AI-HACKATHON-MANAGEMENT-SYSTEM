@@ -10,12 +10,6 @@ const BackendHealthGate = ({ children }) => {
 
   const getHealthCheckUrl = () => {
     let url = API_URL;
-    // Align hostname of the API with the current browser URL to prevent local CORS/PNA issues
-    if (url.includes('127.0.0.1') && window.location.hostname === 'localhost') {
-      url = url.replace('127.0.0.1', 'localhost');
-    } else if (url.includes('localhost') && window.location.hostname === '127.0.0.1') {
-      url = url.replace('localhost', '127.0.0.1');
-    }
     return url.endsWith('/') ? `${url}health` : `${url}/health`;
   };
 

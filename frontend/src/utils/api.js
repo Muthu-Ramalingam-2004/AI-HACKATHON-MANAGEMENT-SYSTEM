@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_URL = import.meta.env.VITE_API_URL || "http://ai-hackathon-management-system.onrender.com/api/v1"
+export const API_URL = import.meta.env.VITE_API_URL || 'https://ai-hackathon-management-system.onrender.com/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,
