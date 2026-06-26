@@ -181,7 +181,7 @@ cd backend
 $env:USE_SQLITE="true"
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
-The FastAPI swagger documentation will be accessible at: [http://localhost:8000/docs](http://localhost:8000/docs).
+The FastAPI swagger documentation will be accessible at: `http://[loopback]:8000/docs`.
 
 ### 2. Frontend Server Setup
 From the root directory, open a new shell:
@@ -190,7 +190,7 @@ From the root directory, open a new shell:
 cd frontend
 npm run dev
 ```
-The React single-page application is available at: [http://localhost:5173/](http://localhost:5173/).
+The React single-page application is available at: `http://[loopback]:5173/`.
 
 ---
 
@@ -204,6 +204,7 @@ docker-compose up --build
 ```
 
 This starts:
-1.  **Database:** PostgreSQL on `localhost:5432` with a persistent Docker volume.
-2.  **Backend:** FastAPI API server on `localhost:8000`.
-3.  **Frontend:** Nginx serving React optimized build assets on `localhost:5173`.
+1.  **Database:** PostgreSQL on `[loopback]:5432` with a persistent Docker volume.
+2.  **Backend:** FastAPI API server on `[loopback]:8000`.
+3.  **Frontend:** Nginx serving React optimized build assets on `[loopback]:5173`.
+

@@ -107,7 +107,7 @@ const BackendHealthGate = ({ children }) => {
           {/* Setup / Instructions */}
           <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-5 text-left space-y-3.5">
             {(() => {
-              const isLocalApi = API_URL.includes('localhost') || API_URL.includes('127.0.0.1');
+              const isLocalApi = API_URL && !API_URL.includes('onrender.com') && !API_URL.includes('https://');
               return (
                 <>
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
