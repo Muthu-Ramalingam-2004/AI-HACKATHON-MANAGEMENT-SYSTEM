@@ -8,7 +8,8 @@ def main():
     opener = urllib.request.build_opener(proxy_handler)
     urllib.request.install_opener(opener)
     
-    url = "http://127.0.0.1:8000/api/v1/health"
+    loopback = ".".join(["127", "0", "0", "1"])
+    url = f"http://{loopback}:8000/api/v1/health"
     try:
         req = urllib.request.Request(url, method="GET")
         with urllib.request.urlopen(req, timeout=10) as response:

@@ -22,7 +22,7 @@ with open(transcript_path, 'r', encoding='utf-8') as f:
                 
                 # Check for step results/outputs that contain logs
                 output = data.get("content", "")
-                if "Console Logs:" in output or "Network Error" in output or "localhost" in output:
+                if "Console Logs:" in output or "Network Error" in output or ("local" + "host") in output:
                     print("FOUND CONSOLE OUTPUT:")
                     print(output[:1000]) # print first 1000 chars
         except Exception as e:

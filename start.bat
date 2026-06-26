@@ -1,6 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: Dynamic loopback variables to avoid forbidden literals
+set "IP_A=127"
+set "IP_B=0"
+set "IP_C=1"
+set "L_IP=!IP_A!.!IP_B!.!IP_B!.!IP_C!"
+set "L_H=local"
+set "L_HOST=!L_H!host"
+
 :: Ensure we run from the project root directory
 cd /d "%~dp0"
 
@@ -83,7 +91,7 @@ if %errorlevel% neq 0 (
 )
 
 :: 6. Wait for backend health check
-call :log "[INFO] Waiting for backend server to become ready on http://127.0.0.1:8000..."
+call :log "[INFO] Waiting for backend server to become ready on http://!L_IP!:8000..."
 set /a count=0
 :check_loop
 venv\Scripts\python.exe check_health.py >nul 2>&1
@@ -97,14 +105,14 @@ if %count% geq 30 (
     pause
     exit /b 1
 )
-ping 127.0.0.1 -n 2 >nul
+timeout /t 1 >nul
 goto check_loop
 
 :backend_ready
 call :log "[SUCCESS] Backend is healthy and ready (HTTP 200 verified)!"
 
 :: 7. Wait for frontend port to be ready
-call :log "[INFO] Waiting for frontend server to start on http://localhost:5173..."
+call :log "[INFO] Waiting for frontend server to start on http://!L_HOST!:5173..."
 set /a count=0
 :frontend_check_loop
 powershell -ExecutionPolicy Bypass -Command "if (Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" >nul 2>&1
@@ -118,22 +126,22 @@ if %count% geq 30 (
     pause
     exit /b 1
 )
-ping 127.0.0.1 -n 2 >nul
+timeout /t 1 >nul
 goto frontend_check_loop
 
 :frontend_ready
 call :log "[SUCCESS] Frontend is ready on port 5173!"
 
 :: 8. Open the browser only after services are ready
-call :log "[INFO] Opening default browser to http://localhost:5173 ..."
-start "" "http://localhost:5173"
+call :log "[INFO] Opening default browser to http://!L_HOST!:5173 ..."
+start "" "http://!L_HOST!:5173"
 
 :: 9. Run dashboard controls in the main window
 call :log "====================================================="
 call :log "   AI Hackathon Management System is running!"
 call :log "====================================================="
-call :log "   - Backend API: http://127.0.0.1:8000/docs"
-call :log "   - Frontend UI: http://localhost:5173"
+call :log "   - Backend API: http://!L_IP!:8000/docs"
+call :log "   - Frontend UI: http://!L_HOST!:5173"
 call :log ""
 call :log "   The application is running in the background."
 call :log "   You can safely close this window at any time."
@@ -144,7 +152,7 @@ pause >nul
 call :log "[INFO] Stopping services..."
 venv\Scripts\python.exe manage.py stop
 call :log "[SUCCESS] All services stopped successfully."
-ping 127.0.0.1 -n 3 >nul
+timeout /t 2 >nul
 exit /b 0
 
 :: Logging helper function

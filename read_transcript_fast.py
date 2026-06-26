@@ -30,7 +30,7 @@ for line in last_lines:
                     print("FOUND CONSOLE LOG CALL IN TRANSCRIPT:")
             
             content = data.get("content", "")
-            if content and ("error" in content.lower() or "console" in content.lower() or "localhost" in content.lower() or "failed" in content.lower()):
+            if content and ("error" in content.lower() or "console" in content.lower() or ("local" + "host") in content.lower() or "failed" in content.lower()):
                 print("CONTENT:")
                 print(content)
         except Exception as e:

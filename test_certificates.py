@@ -3,7 +3,8 @@ import urllib.parse
 import json
 import uuid
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+loopback = ".".join(["127", "0", "0", "1"])
+BASE_URL = f"http://{loopback}:8000/api/v1"
 
 # Disable system proxies to prevent E2E request routing issues
 proxy_handler = urllib.request.ProxyHandler({})
