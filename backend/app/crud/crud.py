@@ -17,7 +17,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     hashed_pwd = get_password_hash(user.password)
     db_user = models.User(
         name=user.name,
-        email=user.email,
+        email=user.email.strip().lower(),
         password=hashed_pwd,
         role=user.role,
         college_id=user.college_id
@@ -32,6 +32,8 @@ def update_user_profile(db: Session, user_id: int, updates: schemas.UserUpdate):
     if not db_user:
         return None
     for field, value in updates.model_dump(exclude_unset=True).items():
+        if field == "email" and value:
+            value = value.strip().lower()
         setattr(db_user, field, value)
     db.commit()
     db.refresh(db_user)
