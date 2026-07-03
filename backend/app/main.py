@@ -20,10 +20,9 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-
-  @app.get("/health")
-    def health():
-        return {"ststus": "ok"}
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 # CORS configuration to allow connections from React frontend
 allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "")
