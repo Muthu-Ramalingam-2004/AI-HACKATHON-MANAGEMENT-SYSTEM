@@ -18,6 +18,9 @@ app = FastAPI(
     description="Backend API for AI Hackathon Management System",
     version="1.0.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    @app.get("/health")
+    def health():
+        return {"ststus": "ok"}
 )
 
 # CORS configuration to allow connections from React frontend
