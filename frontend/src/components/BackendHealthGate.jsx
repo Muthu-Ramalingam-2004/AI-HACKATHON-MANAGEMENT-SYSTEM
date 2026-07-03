@@ -10,7 +10,7 @@ const BackendHealthGate = ({ children }) => {
 
   const getHealthCheckUrl = () => {
     let url = API_URL;
-    return url.endsWith('/') ? `${url}health` : `${url}/health`;
+    return url.endsWith('/') ? `${url}health` : `${url}/api/health`;
   };
 
   const checkHealth = async () => {
