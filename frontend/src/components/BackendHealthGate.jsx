@@ -8,10 +8,10 @@ const BackendHealthGate = ({ children }) => {
   const [retryCountdown, setRetryCountdown] = useState(5);
   const checkingInProgress = useRef(false);
 
-  const getHealthCheckUrl = () => {
-    let url = API_URL;
-    return url.endsWith('/') ? `${url}health` : `${url}/api/health`;
-  };
+const getHealthCheckUrl = () => {
+  let url = API_URL;
+  return url.endsWith('/') ? `${url}api/health` : `${url}/api/health`;
+};
 
   const checkHealth = async () => {
     if (checkingInProgress.current) return;
