@@ -16,6 +16,8 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.barcode.qr import QrCodeWidget
 
 router = APIRouter()
 
@@ -26,10 +28,10 @@ def generate_pdf_certificate(name: str, cert_type: str, cert_num: str, hackathon
     doc = SimpleDocTemplate(
         buffer,
         pagesize=landscape(letter),
-        leftMargin=40,
-        rightMargin=40,
-        topMargin=40,
-        bottomMargin=40
+        leftMargin=50,
+        rightMargin=50,
+        topMargin=50,
+        bottomMargin=50
     )
     
     story = []
@@ -39,53 +41,58 @@ def generate_pdf_certificate(name: str, cert_type: str, cert_num: str, hackathon
     title_style = ParagraphStyle(
         'CertTitle',
         parent=styles['Heading1'],
+        fontName='Times-Bold',
         fontSize=36,
         leading=42,
         alignment=1,  # Center
-        textColor=colors.HexColor("#4F46E5"),  # Indigo
-        spaceAfter=20
+        textColor=colors.HexColor("#1E3A8A"),  # Deep Navy Blue
+        spaceAfter=15
     )
     
     subtitle_style = ParagraphStyle(
         'CertSub',
         parent=styles['Normal'],
-        fontSize=18,
-        leading=22,
+        fontName='Helvetica-Oblique',
+        fontSize=15,
+        leading=18,
         alignment=1,
-        textColor=colors.HexColor("#4B5563"),  # Gray 600
-        spaceAfter=30
+        textColor=colors.HexColor("#D4AF37"),  # Gold Accent
+        spaceAfter=25
     )
     
     name_style = ParagraphStyle(
         'CertName',
         parent=styles['Heading2'],
-        fontSize=28,
-        leading=34,
+        fontName='Helvetica-Bold',
+        fontSize=32,
+        leading=38,
         alignment=1,
-        textColor=colors.HexColor("#111827"),  # Gray 900
-        spaceAfter=20
+        textColor=colors.HexColor("#111827"),  # Dark charcoal
+        spaceAfter=15
     )
     
     text_style = ParagraphStyle(
         'CertText',
         parent=styles['Normal'],
-        fontSize=14,
+        fontName='Helvetica',
+        fontSize=13,
         leading=18,
         alignment=1,
-        textColor=colors.HexColor("#374151"),  # Gray 700
-        spaceAfter=40
+        textColor=colors.HexColor("#4B5563"),  # Gray 600
+        spaceAfter=30
     )
     
     footer_style = ParagraphStyle(
         'CertFooter',
         parent=styles['Normal'],
-        fontSize=10,
-        leading=12,
+        fontName='Courier',
+        fontSize=9,
+        leading=11,
         alignment=1,
-        textColor=colors.HexColor("#9CA3AF")  # Gray 400
+        textColor=colors.HexColor("#6B7280")  # Gray 500
     )
     
-    story.append(Spacer(1, 40))
+    story.append(Spacer(1, 70))
     if cert_type.lower() == "winner":
         story.append(Paragraph("CERTIFICATE OF EXCELLENCE", title_style))
         story.append(Paragraph("This is proudly presented to", subtitle_style))
@@ -97,23 +104,184 @@ def generate_pdf_certificate(name: str, cert_type: str, cert_num: str, hackathon
         story.append(Paragraph(name, name_style))
         story.append(Paragraph(f"for successfully participating in the <b>{hackathon_title}</b>", text_style))
         
-    story.append(Spacer(1, 40))
-    story.append(Paragraph(f"Certificate Number: {cert_num}  |  Generated on: {datetime.now().strftime('%Y-%m-%d')}", footer_style))
+    story.append(Spacer(1, 30))
+    story.append(Paragraph(f"Certificate Number: {cert_num}  |  Issued: {datetime.now().strftime('%Y-%m-%d')}", footer_style))
     
-    # Canvas border callback
-    def draw_border(canvas, doc):
+    # Canvas border & design callback
+    def draw_premium_decorations(canvas, doc):
         canvas.saveState()
-        canvas.setStrokeColor(colors.HexColor("#4F46E5"))
-        canvas.setLineWidth(5)
-        canvas.rect(20, 20, doc.width + 40, doc.height + 40)
         
-        # Inner border
-        canvas.setStrokeColor(colors.HexColor("#D1D5DB"))
+        # 1. Page Background (soft cream)
+        canvas.setFillColor(colors.HexColor("#FCFBF8"))
+        canvas.rect(0, 0, 792, 612, fill=True, stroke=False)
+        
+        # 2. Main Corner Ribbons / Geometrical Accents
+        # Top Left
+        p1 = canvas.beginPath()
+        p1.moveTo(0, 612)
+        p1.lineTo(120, 612)
+        p1.lineTo(0, 492)
+        p1.close()
+        canvas.setFillColor(colors.HexColor("#1E3A8A")) # Navy
+        canvas.drawPath(p1, fill=True, stroke=False)
+        
+        p1_stripe = canvas.beginPath()
+        p1_stripe.moveTo(0, 482)
+        p1_stripe.lineTo(130, 612)
+        p1_stripe.lineTo(142, 612)
+        p1_stripe.lineTo(0, 470)
+        p1_stripe.close()
+        canvas.setFillColor(colors.HexColor("#D4AF37")) # Gold
+        canvas.drawPath(p1_stripe, fill=True, stroke=False)
+
+        # Top Right
+        p2 = canvas.beginPath()
+        p2.moveTo(792, 612)
+        p2.lineTo(672, 612)
+        p2.lineTo(792, 492)
+        p2.close()
+        canvas.setFillColor(colors.HexColor("#1E3A8A"))
+        canvas.drawPath(p2, fill=True, stroke=False)
+        
+        p2_stripe = canvas.beginPath()
+        p2_stripe.moveTo(792, 482)
+        p2_stripe.lineTo(662, 612)
+        p2_stripe.lineTo(650, 612)
+        p2_stripe.lineTo(792, 470)
+        p2_stripe.close()
+        canvas.setFillColor(colors.HexColor("#D4AF37"))
+        canvas.drawPath(p2_stripe, fill=True, stroke=False)
+
+        # Bottom Left
+        p3 = canvas.beginPath()
+        p3.moveTo(0, 0)
+        p3.lineTo(120, 0)
+        p3.lineTo(0, 120)
+        p3.close()
+        canvas.setFillColor(colors.HexColor("#1E3A8A"))
+        canvas.drawPath(p3, fill=True, stroke=False)
+        
+        p3_stripe = canvas.beginPath()
+        p3_stripe.moveTo(0, 130)
+        p3_stripe.lineTo(130, 0)
+        p3_stripe.lineTo(142, 0)
+        p3_stripe.lineTo(0, 142)
+        p3_stripe.close()
+        canvas.setFillColor(colors.HexColor("#D4AF37"))
+        canvas.drawPath(p3_stripe, fill=True, stroke=False)
+
+        # Bottom Right
+        p4 = canvas.beginPath()
+        p4.moveTo(792, 0)
+        p4.lineTo(672, 0)
+        p4.lineTo(792, 120)
+        p4.close()
+        canvas.setFillColor(colors.HexColor("#1E3A8A"))
+        canvas.drawPath(p4, fill=True, stroke=False)
+        
+        p4_stripe = canvas.beginPath()
+        p4_stripe.moveTo(792, 130)
+        p4_stripe.lineTo(662, 0)
+        p4_stripe.lineTo(650, 0)
+        p4_stripe.lineTo(792, 142)
+        p4_stripe.close()
+        canvas.setFillColor(colors.HexColor("#D4AF37"))
+        canvas.drawPath(p4_stripe, fill=True, stroke=False)
+        
+        # 3. Outer Borders
+        canvas.setStrokeColor(colors.HexColor("#D4AF37")) # Gold Outer
+        canvas.setLineWidth(3)
+        canvas.rect(25, 25, 742, 562, fill=False, stroke=True)
+        
+        canvas.setStrokeColor(colors.HexColor("#1E3A8A")) # Navy Inner
         canvas.setLineWidth(1)
-        canvas.rect(26, 26, doc.width + 28, doc.height + 28)
-        canvas.restoreState()
+        canvas.rect(31, 31, 730, 550, fill=False, stroke=True)
+
+        # 4. Premium Quality Seal (Bottom Left)
+        # Ribbon 1
+        r1 = canvas.beginPath()
+        r1.moveTo(155, 60)
+        r1.lineTo(165, 120)
+        r1.lineTo(145, 120)
+        r1.close()
+        canvas.setFillColor(colors.HexColor("#D4AF37"))
+        canvas.drawPath(r1, fill=True, stroke=False)
+        # Ribbon 2
+        r2 = canvas.beginPath()
+        r2.moveTo(175, 60)
+        r2.lineTo(165, 120)
+        r2.lineTo(185, 120)
+        r2.close()
+        canvas.drawPath(r2, fill=True, stroke=False)
         
-    doc.build(story, onFirstPage=draw_border)
+        # Outer Gold Circle
+        canvas.setFillColor(colors.HexColor("#D4AF37"))
+        canvas.circle(165, 120, 32, fill=True, stroke=False)
+        # Inner Navy Circle
+        canvas.setFillColor(colors.HexColor("#1E3A8A"))
+        canvas.circle(165, 120, 26, fill=True, stroke=False)
+        
+        # Draw small star symbol inside the seal
+        canvas.setFillColor(colors.HexColor("#D4AF37"))
+        canvas.setFont('Times-Bold', 18)
+        canvas.drawCentredString(165, 114, "★")
+
+        # 5. Signatures (Bottom Right)
+        # CEO Line & Text
+        canvas.setStrokeColor(colors.HexColor("#9CA3AF"))
+        canvas.setLineWidth(1)
+        canvas.line(460, 95, 580, 95)
+        canvas.setFont('Helvetica', 8)
+        canvas.setFillColor(colors.HexColor("#4B5563"))
+        canvas.drawCentredString(520, 83, "Jane Doe")
+        canvas.drawCentredString(520, 71, "CEO, HackAI Global")
+        
+        # Draw CEO mock signature curve
+        sig1 = canvas.beginPath()
+        sig1.moveTo(470, 100)
+        sig1.curveTo(490, 125, 530, 85, 550, 115)
+        sig1.curveTo(560, 125, 570, 100, 585, 105)
+        canvas.setStrokeColor(colors.HexColor("#1E3A8A"))
+        canvas.setLineWidth(1.5)
+        canvas.drawPath(sig1, fill=False, stroke=True)
+
+        # Host Dean Line & Text
+        canvas.setStrokeColor(colors.HexColor("#9CA3AF"))
+        canvas.setLineWidth(1)
+        canvas.line(610, 95, 730, 95)
+        canvas.setFont('Helvetica', 8)
+        canvas.setFillColor(colors.HexColor("#4B5563"))
+        canvas.drawCentredString(670, 83, "Dr. John Smith")
+        canvas.drawCentredString(670, 71, "Dean, Evaluator Board")
+        
+        # Draw Dean mock signature curve
+        sig2 = canvas.beginPath()
+        sig2.moveTo(620, 105)
+        sig2.curveTo(640, 85, 680, 125, 700, 100)
+        sig2.curveTo(710, 90, 720, 115, 728, 110)
+        canvas.setStrokeColor(colors.HexColor("#D4AF37"))
+        canvas.setLineWidth(1.5)
+        canvas.drawPath(sig2, fill=False, stroke=True)
+        
+        # 6. QR Code (Top Right)
+        qr_code = QrCodeWidget(cert_num)
+        qr_code.barWidth = 60
+        qr_code.barHeight = 60
+        qr_code.x = 0
+        qr_code.y = 0
+        
+        d = Drawing(60, 60)
+        d.add(qr_code)
+        d.drawOn(canvas, 675, 485)
+        
+        # Label above QR Code
+        canvas.setFont('Courier', 7)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawCentredString(705, 550, "SECURE VERIFICATION")
+        
+        canvas.restoreState()
+
+    doc.build(story, onFirstPage=draw_premium_decorations)
     buffer.seek(0)
     return buffer
 

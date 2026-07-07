@@ -186,8 +186,8 @@ const SuperAdminDashboard = () => {
       {msg.text && (
         <div class={`p-4 rounded-xl border flex items-center space-x-2.5 text-sm ${
           msg.type === 'success' 
-            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-            : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-650 dark:text-emerald-400'
+            : 'bg-rose-500/10 border-rose-500/20 text-rose-650 dark:text-rose-400'
         }`}>
           {msg.type === 'success' ? <CheckCircle class="h-5 w-5 shrink-0" /> : <AlertCircle class="h-5 w-5 shrink-0" />}
           <span>{msg.text}</span>
@@ -195,7 +195,7 @@ const SuperAdminDashboard = () => {
       )}
 
       {/* Tabs */}
-      <div class="flex border-b border-slate-800 space-x-6 text-sm">
+      <div class="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-sm">
         {['overview', 'hackathons', 'colleges', 'users', 'certificates'].map((tab) => (
           <button
             key={tab}
@@ -208,8 +208,8 @@ const SuperAdminDashboard = () => {
             }}
             class={`pb-3 font-semibold transition-all capitalize border-b-2 cursor-pointer ${
               activeTab === tab 
-                ? 'border-indigo-500 text-indigo-400' 
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             {tab}
@@ -230,12 +230,12 @@ const SuperAdminDashboard = () => {
             ].map((card, idx) => {
               const Icon = card.icon;
               return (
-                <div key={idx} class="glass-card p-5 rounded-2xl border border-slate-800 text-center flex flex-col items-center">
-                  <div class="h-9 w-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-2">
+                <div key={idx} class="glass-card p-5 rounded-2xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
+                  <div class="h-9 w-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-2">
                     <Icon class="h-4.5 w-4.5" />
                   </div>
-                  <span class="text-[10px] text-slate-500 font-semibold uppercase block">{card.label}</span>
-                  <span class="text-xl font-extrabold text-white mt-1 block">{card.val}</span>
+                  <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase block">{card.label}</span>
+                  <span class="text-xl font-extrabold text-slate-800 dark:text-white mt-1 block">{card.val}</span>
                 </div>
               );
             })}
@@ -243,13 +243,13 @@ const SuperAdminDashboard = () => {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* User Roles Card */}
-            <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
-              <h3 class="font-bold text-white text-base">User Roles Distribution</h3>
-              <div class="divide-y divide-slate-800/60">
+            <div class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h3 class="font-bold text-slate-800 dark:text-white text-base">User Roles Distribution</h3>
+              <div class="divide-y divide-slate-200 dark:divide-slate-800/60">
                 {Object.entries(roleDist).map(([role, count]) => (
                   <div key={role} class="py-2.5 flex justify-between items-center text-sm">
-                    <span class="capitalize text-slate-400 font-medium">{role}s</span>
-                    <span class="px-2.5 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 font-mono text-xs">
+                    <span class="capitalize text-slate-500 dark:text-slate-400 font-medium">{role}s</span>
+                    <span class="px-2.5 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/15 font-mono text-xs">
                       {count}
                     </span>
                   </div>
@@ -258,18 +258,18 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
-              <h3 class="font-bold text-white text-base">Quick Admin Commands</h3>
+            <div class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h3 class="font-bold text-slate-800 dark:text-white text-base">Quick Admin Commands</h3>
               <div class="grid grid-cols-2 gap-3">
                 <button 
                   onClick={() => setActiveTab('hackathons')} 
-                  class="p-3 text-center rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/30 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+                  class="p-3 text-center rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                 >
                   Configure Hackathon
                 </button>
                 <button 
                   onClick={() => setActiveTab('certificates')} 
-                  class="p-3 text-center rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/30 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+                  class="p-3 text-center rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                 >
                   Issue Winner Cert
                 </button>
@@ -284,16 +284,16 @@ const SuperAdminDashboard = () => {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Hackathons management list */}
           <div class="lg:col-span-2 space-y-4">
-            <h3 class="text-lg font-bold text-white">Hackathon Configurations</h3>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Hackathon Configurations</h3>
             <div class="space-y-4">
               {hackathons.map((h) => (
-                <div key={h.id} class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div key={h.id} class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                   <div>
-                    <h4 class="font-bold text-white text-base">{h.title}</h4>
-                    <p class="text-xs text-slate-500 mt-1">
+                    <h4 class="font-bold text-slate-800 dark:text-white text-base">{h.title}</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-450 mt-1">
                       {new Date(h.start_date).toLocaleDateString()} - {new Date(h.end_date).toLocaleDateString()}
                     </p>
-                    <p class="text-xs text-slate-400 mt-2 line-clamp-2">{h.description}</p>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2">{h.description}</p>
                   </div>
                   <div class="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
                     {h.status === 'draft' && (
@@ -312,13 +312,13 @@ const SuperAdminDashboard = () => {
                         setHackStart(h.start_date.substring(0, 16));
                         setHackEnd(h.end_date.substring(0, 16));
                       }}
-                      class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-lg cursor-pointer"
+                      class="p-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg cursor-pointer animate-none"
                     >
                       <Edit class="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteHackathon(h.id)}
-                      class="p-2 bg-rose-500/5 hover:bg-rose-500/10 text-rose-400 border border-rose-500/10 hover:border-rose-500/25 rounded-lg cursor-pointer"
+                      class="p-2 bg-rose-500/5 hover:bg-rose-500/10 text-rose-450 border border-rose-500/10 hover:border-rose-500/25 rounded-lg cursor-pointer"
                     >
                       <Trash2 class="h-4 w-4" />
                     </button>
@@ -329,13 +329,13 @@ const SuperAdminDashboard = () => {
           </div>
 
           {/* Hackathon Add/Edit Form */}
-          <div class="glass-card p-6 rounded-2xl border border-slate-800">
-            <h3 class="text-base font-bold text-white mb-4">
+          <div class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="text-base font-bold text-slate-800 dark:text-white mb-4">
               {editingHackId ? 'Update Hackathon Details' : 'Create New Hackathon'}
             </h3>
             <form onSubmit={handleHackathonSubmit} class="space-y-4">
               <div>
-                <label for="hack_title" class="block text-xs font-medium text-slate-300">
+                <label for="hack_title" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   Hackathon Title *
                 </label>
                 <input
@@ -344,13 +344,13 @@ const SuperAdminDashboard = () => {
                   required
                   value={hackTitle}
                   onChange={(e) => setHackTitle(e.target.value)}
-                  class="mt-1.5 block w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300"
+                  class="mt-1.5 block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-850 dark:text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   placeholder="AI Innovation Hack"
                 />
               </div>
 
               <div>
-                <label for="hack_desc" class="block text-xs font-medium text-slate-300">
+                <label for="hack_desc" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   Description
                 </label>
                 <textarea
@@ -358,13 +358,13 @@ const SuperAdminDashboard = () => {
                   rows="3"
                   value={hackDesc}
                   onChange={(e) => setHackDesc(e.target.value)}
-                  class="mt-1.5 block w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300"
+                  class="mt-1.5 block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-850 dark:text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   placeholder="Brief agenda and themes..."
                 />
               </div>
 
               <div>
-                <label for="hack_start" class="block text-xs font-medium text-slate-300">
+                <label for="hack_start" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   Start Date *
                 </label>
                 <input
@@ -373,12 +373,12 @@ const SuperAdminDashboard = () => {
                   required
                   value={hackStart}
                   onChange={(e) => setHackStart(e.target.value)}
-                  class="mt-1.5 block w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300"
+                  class="mt-1.5 block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label for="hack_end" class="block text-xs font-medium text-slate-300">
+                <label for="hack_end" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   End Date *
                 </label>
                 <input
@@ -387,7 +387,7 @@ const SuperAdminDashboard = () => {
                   required
                   value={hackEnd}
                   onChange={(e) => setHackEnd(e.target.value)}
-                  class="mt-1.5 block w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300"
+                  class="mt-1.5 block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
@@ -408,7 +408,7 @@ const SuperAdminDashboard = () => {
                       setHackStart('');
                       setHackEnd('');
                     }}
-                    class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 hover:border-slate-600 rounded-xl text-xs font-semibold"
+                    class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700 hover:border-slate-450 dark:hover:border-slate-600 rounded-xl text-xs font-semibold"
                   >
                     Cancel
                   </button>
@@ -421,27 +421,27 @@ const SuperAdminDashboard = () => {
 
       {/* COLLEGES TAB */}
       {activeTab === 'colleges' && (
-        <div class="glass-card rounded-3xl border border-slate-800 overflow-hidden">
-          <div class="p-6 border-b border-slate-800">
-            <h3 class="font-bold text-white text-base">Affiliated Colleges List</h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Institutes registered under HackAI platform.</p>
+        <div class="glass-card rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="font-bold text-slate-800 dark:text-white text-base">Affiliated Colleges List</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Institutes registered under HackAI platform.</p>
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-slate-900/50 text-[10px] font-bold tracking-wider text-slate-400 uppercase border-b border-slate-800">
+                <tr class="bg-slate-100/80 dark:bg-slate-900/50 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-800">
                   <th class="px-6 py-4">College Name</th>
                   <th class="px-6 py-4">Address / Location</th>
                   <th class="px-6 py-4">Representative / Contact</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/60 text-sm text-slate-300">
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm text-slate-700 dark:text-slate-300">
                 {colleges.map((c) => (
-                  <tr key={c.id} class="hover:bg-slate-800/10">
-                    <td class="px-6 py-4 font-bold text-white">{c.college_name}</td>
-                    <td class="px-6 py-4 text-xs text-slate-400">{c.address || 'N/A'}</td>
-                    <td class="px-6 py-4 text-xs text-slate-400">{c.contact_person || 'N/A'}</td>
+                  <tr key={c.id} class="hover:bg-slate-100 dark:hover:bg-slate-800/10">
+                    <td class="px-6 py-4 font-bold text-slate-800 dark:text-white">{c.college_name}</td>
+                    <td class="px-6 py-4 text-xs text-slate-550 dark:text-slate-400">{c.address || 'N/A'}</td>
+                    <td class="px-6 py-4 text-xs text-slate-550 dark:text-slate-400">{c.contact_person || 'N/A'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -452,41 +452,41 @@ const SuperAdminDashboard = () => {
 
       {/* USERS TAB */}
       {activeTab === 'users' && (
-        <div class="glass-card rounded-3xl border border-slate-800 overflow-hidden">
-          <div class="p-6 border-b border-slate-800">
-            <h3 class="font-bold text-white text-base">Users Roster</h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Monitor system administrators, judges, coordinators, and students.</p>
+        <div class="glass-card rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="font-bold text-slate-800 dark:text-white text-base">Users Roster</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Monitor system administrators, judges, coordinators, and students.</p>
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-slate-900/50 text-[10px] font-bold tracking-wider text-slate-400 uppercase border-b border-slate-800">
+                <tr class="bg-slate-100/80 dark:bg-slate-900/50 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-800">
                   <th class="px-6 py-4">Name</th>
                   <th class="px-6 py-4">Email</th>
                   <th class="px-6 py-4">Role</th>
                   <th class="px-6 py-4">Institution</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/60 text-sm text-slate-300">
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm text-slate-700 dark:text-slate-300">
                 {usersList.map((usr) => (
-                  <tr key={usr.id} class="hover:bg-slate-800/10">
-                    <td class="px-6 py-4 font-bold text-white">{usr.name}</td>
-                    <td class="px-6 py-4 text-xs font-mono text-slate-400">{usr.email}</td>
+                  <tr key={usr.id} class="hover:bg-slate-100 dark:hover:bg-slate-800/10">
+                    <td class="px-6 py-4 font-bold text-slate-800 dark:text-white">{usr.name}</td>
+                    <td class="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">{usr.email}</td>
                     <td class="px-6 py-4">
                       <span class={`px-2 py-0.5 text-[10px] font-bold rounded-lg border uppercase ${
                         usr.role === 'admin' 
-                          ? 'bg-rose-500/10 border-rose-500/15 text-rose-400'
+                          ? 'bg-rose-500/10 border-rose-500/15 text-rose-600 dark:text-rose-400'
                           : usr.role === 'judge'
-                          ? 'bg-amber-500/10 border-amber-500/15 text-amber-400'
+                          ? 'bg-amber-500/10 border-amber-500/15 text-amber-600 dark:text-amber-400'
                           : usr.role === 'college'
-                          ? 'bg-emerald-500/10 border-emerald-500/15 text-emerald-400'
-                          : 'bg-indigo-500/10 border-indigo-500/15 text-indigo-400'
+                          ? 'bg-emerald-500/10 border-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-indigo-500/10 border-indigo-500/15 text-indigo-600 dark:text-indigo-400'
                       }`}>
                         {usr.role}
                       </span>
                     </td>
-                    <td class="px-6 py-4 text-xs text-slate-400">{usr.college_name || 'System Organizer'}</td>
+                    <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">{usr.college_name || 'System Organizer'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -500,34 +500,34 @@ const SuperAdminDashboard = () => {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Certificate listing */}
           <div class="lg:col-span-2 space-y-4">
-            <h3 class="text-lg font-bold text-white">Issued Certificates</h3>
-            <div class="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Issued Certificates</h3>
+            <div class="glass-card rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
               <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                   <thead>
-                    <tr class="bg-slate-900/50 text-[10px] font-bold tracking-wider text-slate-400 uppercase border-b border-slate-800">
+                    <tr class="bg-slate-100/80 dark:bg-slate-900/50 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-800">
                       <th class="px-6 py-4">User</th>
                       <th class="px-6 py-4">Type</th>
                       <th class="px-6 py-4">Certificate Number</th>
                       <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-slate-800/60 text-sm text-slate-300">
+                  <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm text-slate-700 dark:text-slate-300">
                     {certificates.map((cert) => (
-                      <tr key={cert.id} class="hover:bg-slate-800/10">
-                        <td class="px-6 py-4 font-semibold text-white">{cert.user.name}</td>
+                      <tr key={cert.id} class="hover:bg-slate-100 dark:hover:bg-slate-800/10">
+                        <td class="px-6 py-4 font-semibold text-slate-800 dark:text-white">{cert.user.name}</td>
                         <td class="px-6 py-4">
-                          <span class="capitalize text-xs font-medium text-indigo-400 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">
+                          <span class="capitalize text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">
                             {cert.certificate_type}
                           </span>
                         </td>
-                        <td class="px-6 py-4 text-xs font-mono text-slate-400">{cert.certificate_number}</td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">{cert.certificate_number}</td>
                         <td class="px-6 py-4 text-right">
                           <a
                             href={`${API_URL}/certificates/${cert.id}/download?token=${localStorage.getItem('accessToken')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center text-indigo-400 hover:text-indigo-300 text-xs font-semibold"
+                            class="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-semibold"
                           >
                             PDF <FileText class="h-3.5 w-3.5 ml-1" />
                           </a>
@@ -536,7 +536,7 @@ const SuperAdminDashboard = () => {
                     ))}
                     {certificates.length === 0 && (
                       <tr>
-                        <td colSpan="4" class="px-6 py-8 text-center text-slate-500 text-xs">No certificates generated yet. Use form to generate one.</td>
+                        <td colSpan="4" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400 text-xs">No certificates generated yet. Use form to generate one.</td>
                       </tr>
                     )}
                   </tbody>
@@ -546,11 +546,11 @@ const SuperAdminDashboard = () => {
           </div>
 
           {/* Certificate Generation form */}
-          <div class="glass-card p-6 rounded-2xl border border-slate-800">
-            <h3 class="text-base font-bold text-white mb-4">Issue Digital Certificate</h3>
+          <div class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="text-base font-bold text-slate-800 dark:text-white mb-4">Issue Digital Certificate</h3>
             <form onSubmit={handleGenerateCertificate} class="space-y-4">
               <div>
-                <label for="cert_recipient" class="block text-xs font-medium text-slate-300">
+                <label for="cert_recipient" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   Select Recipient *
                 </label>
                 <select
@@ -558,7 +558,7 @@ const SuperAdminDashboard = () => {
                   required
                   value={certUserId}
                   onChange={(e) => setCertUserId(e.target.value)}
-                  class="mt-1.5 block w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 appearance-none"
+                  class="mt-1.5 block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none appearance-none"
                 >
                   <option value="">Select student...</option>
                   {usersList.filter(u => u.role === 'participant').map(usr => (
@@ -568,7 +568,7 @@ const SuperAdminDashboard = () => {
               </div>
 
               <div>
-                <label for="cert_hackathon" class="block text-xs font-medium text-slate-300">
+                <label for="cert_hackathon" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   Associated Hackathon *
                 </label>
                 <select
@@ -576,7 +576,7 @@ const SuperAdminDashboard = () => {
                   required
                   value={certHackId}
                   onChange={(e) => setCertHackId(e.target.value)}
-                  class="mt-1.5 block w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 appearance-none"
+                  class="mt-1.5 block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none appearance-none"
                 >
                   <option value="">Select hackathon...</option>
                   {hackathons.map((h) => (
@@ -586,7 +586,7 @@ const SuperAdminDashboard = () => {
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-slate-300">
+                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300">
                   Certificate Class *
                 </label>
                 <div class="mt-2 grid grid-cols-2 gap-3">
@@ -595,8 +595,8 @@ const SuperAdminDashboard = () => {
                     onClick={() => setCertType('participation')}
                     class={`py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       certType === 'participation'
-                        ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500'
-                        : 'bg-slate-900/40 text-slate-400 border-slate-800'
+                        ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border-indigo-500'
+                        : 'bg-slate-100/60 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     Participation
@@ -606,8 +606,8 @@ const SuperAdminDashboard = () => {
                     onClick={() => setCertType('winner')}
                     class={`py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       certType === 'winner'
-                        ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500'
-                        : 'bg-slate-900/40 text-slate-400 border-slate-800'
+                        ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border-indigo-500'
+                        : 'bg-slate-100/60 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     Winner Certificate
