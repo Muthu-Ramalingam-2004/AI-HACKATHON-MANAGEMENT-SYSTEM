@@ -7,14 +7,14 @@ import { Code, User as UserIcon, Mail, Lock, School, AlertCircle, ArrowLeft } fr
 const Register = () => {
   const { registerUser, login } = useAuth();
   const navigate = useNavigate();
-  
+
   // Form States
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('participant'); // participant, college
   const [selectedCollegeId, setSelectedCollegeId] = useState('');
-  
+
   // New College Inline Creation State (for College Reps or Participants whose college isn't listed)
   const [showNewCollegeForm, setShowNewCollegeForm] = useState(false);
   const [newCollegeName, setNewCollegeName] = useState('');
@@ -53,14 +53,14 @@ const Register = () => {
         if (!newCollegeName) {
           throw new Error('Please enter a college name.');
         }
-        
+
         // Create the college first
         const collegeRes = await api.post('/colleges', {
           college_name: newCollegeName,
           address: newCollegeAddress,
           contact_person: newCollegeContact || name
         });
-        
+
         collegeId = collegeRes.data.id;
       }
 
@@ -74,7 +74,7 @@ const Register = () => {
       );
 
       setSuccess('Account created successfully! Logging you in...');
-      
+
       // Auto Login
       setTimeout(async () => {
         try {
@@ -138,22 +138,20 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => { setRole('participant'); setShowNewCollegeForm(false); }}
-                  class={`py-2.5 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${
-                    role === 'participant'
+                  class={`py-2.5 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${role === 'participant'
                       ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border-indigo-500 shadow-inner'
                       : 'bg-slate-100/60 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                  }`}
+                    }`}
                 >
                   Participant
                 </button>
                 <button
                   type="button"
                   onClick={() => { setRole('college'); setShowNewCollegeForm(true); }}
-                  class={`py-2.5 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${
-                    role === 'college'
+                  class={`py-2.5 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${role === 'college'
                       ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border-indigo-500 shadow-inner'
                       : 'bg-slate-100/60 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                  }`}
+                    }`}
                 >
                   College Representative
                 </button>
@@ -332,9 +330,6 @@ const Register = () => {
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
         </div>
       </div>
     </div>
