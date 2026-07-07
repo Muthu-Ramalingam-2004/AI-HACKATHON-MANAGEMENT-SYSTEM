@@ -20,6 +20,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+
 # CORS configuration to allow connections from React frontend
 allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = [origin.strip() for origin in allowed_origins_raw.split(",") if origin.strip()]
