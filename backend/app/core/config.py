@@ -56,12 +56,8 @@ class Settings(BaseSettings):
     # File uploads
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploads")
 
-    # SMTP Configuration
-    SMTP_TLS: bool = True
-    SMTP_PORT: Optional[int] = int(os.getenv("SMTP_PORT", "587")) if os.getenv("SMTP_PORT") else 587
-    SMTP_HOST: Optional[str] = os.getenv("SMTP_HOST")
-    SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
-    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
+    # Brevo HTTP Email API Configuration
+    BREVO_API_KEY: Optional[str] = os.getenv("BREVO_API_KEY")
     EMAILS_FROM_EMAIL: str = os.getenv("EMAILS_FROM_EMAIL", "noreply@hackathon.com")
     EMAILS_FROM_NAME: str = os.getenv("EMAILS_FROM_NAME", "AI Hackathon Management System")
     FRONTEND_HOST: str = os.getenv("FRONTEND_HOST", "http://localhost:5173")
