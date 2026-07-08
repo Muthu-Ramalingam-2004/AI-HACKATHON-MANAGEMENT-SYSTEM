@@ -13,6 +13,7 @@ import ParticipantDashboard from './pages/ParticipantDashboard';
 import CollegeDashboard from './pages/CollegeDashboard';
 import JudgeDashboard from './pages/JudgeDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import ResetPassword from './pages/ResetPassword';
 
 const RootRedirect = () => {
   const role = localStorage.getItem('userRole');
@@ -35,6 +36,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Protected Routes */}
           <Route path="/dashboard/admin/*" element={

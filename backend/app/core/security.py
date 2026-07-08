@@ -39,3 +39,19 @@ def decode_token(token: str) -> dict:
         return decoded_payload
     except jwt.PyJWTError:
         return {}
+
+def create_password_reset_token(subject: str) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode = {"exp": expire, "sub": str(subject), "type": "password_reset"}
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
+    return encoded_jwt
+
+def verify_password_reset_token(token: str) -> Union[str, None]:
+    try:
+        decoded_payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        if decoded_payload.get("type") == "password_reset":
+            return decoded_payload.get("sub")
+    except jwt.PyJWTError:
+        pass
+    return None
+

@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.core import security
+from app.core import security, email
 from app.crud import crud
 from app.schemas import schemas
 from app.routers.deps import get_current_user
@@ -112,6 +112,52 @@ def forgot_password(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No account found with this email."
         )
+    
+    # Generate password reset token
+    token = security.create_password_reset_token(subject=user.email)
+    
+    # Attempt to send email
+    try:
+        email.send_reset_password_email(email_to=user.email, token=token)
+    except ValueError as val_err:
+        # SMTP configuration missing or invalid
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(val_err)
+        )
+    except Exception as smtp_err:
+        # SMTP connection/sending failed
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send email via SMTP: {str(smtp_err)}"
+        )
+        
     return {"message": "A password reset link has been sent to your email."}
+
+@router.post("/reset-password")
+def reset_password(
+    reset_in: schemas.ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    email_address = security.verify_password_reset_token(reset_in.token)
+    if not email_address:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The reset link is invalid or has expired."
+        )
+        
+    user = crud.get_user_by_email(db, email=email_address)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email."
+        )
+        
+    # Hash new password
+    hashed_pwd = security.get_password_hash(reset_in.new_password)
+    user.password = hashed_pwd
+    db.commit()
+    
+    return {"message": "Password reset successfully. You can now login with your new password."}
 
 
