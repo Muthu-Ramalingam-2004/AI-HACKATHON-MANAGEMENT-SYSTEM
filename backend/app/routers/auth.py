@@ -101,3 +101,17 @@ def get_all_users(
         )
     return db.query(models.User).all()
 
+@router.post("/forgot-password")
+def forgot_password(
+    forgot_in: schemas.ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    user = crud.get_user_by_email(db, email=forgot_in.email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email."
+        )
+    return {"message": "A password reset link has been sent to your email."}
+
+

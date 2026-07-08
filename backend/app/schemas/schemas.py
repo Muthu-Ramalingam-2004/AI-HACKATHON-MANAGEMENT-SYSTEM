@@ -55,6 +55,10 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     college_id: Optional[int] = None
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
 # Hackathon Schemas
 class HackathonBase(BaseModel):
     title: str
